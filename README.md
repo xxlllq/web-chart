@@ -4,5 +4,5 @@
 <div align=center><img width="100%" height="auto"src="https://github.com/xxlllq/web-chart/blob/master/chart.png" alt="web-chart" title="web-chart"/></div>
 
 #### 前言
-某项目中需要实现显示Excel导入数据库进度（已导入/总条数），最终使用SignalR实现该功能。在此基础上，实现了此案例！
+某项目中需要实现显示Excel导入数据库进度（已导入/总条数）的功能，最终使用SignalR实现。在此基础上，实现了此案例！
 
