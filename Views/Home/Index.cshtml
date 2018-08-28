@@ -1,0 +1,153 @@
+﻿@{
+    ViewBag.Title = "Web Chart";
+}
+<script src="~/Scripts/jquery.min.js"></script>
+<script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+<script src="~/signalr/hubs"></script>
+
+<style>
+    body {
+        padding-top: 10px;
+    }
+
+    h3 {
+        margin-top: 0;
+    }
+
+    .well {
+        padding-top: 10px;
+    }
+
+        .well .form-group .form-control {
+            max-width: 100%;
+        }
+
+        .well .list-group {
+            margin-bottom: 5px;
+            height: 350px;
+            background: #fff;
+            border: 1px solid gainsboro;
+            border-radius: 5px;
+            overflow: auto;
+            padding: 10px;
+            padding-top: 10px;
+        }
+
+            .well .list-group .media {
+                width: 100%;
+                display: inline-flex;
+                margin-top: 0;
+                border-bottom: 1px solid gainsboro;
+            }
+
+                .well .list-group .media .message-container {
+                    display: inline-flex;
+                    align-items: center;
+                }
+
+                .well .list-group .media .media-left img {
+                    border-radius: 50%;
+                    width: 50px;
+                    height: 50px;
+                    border: 1px solid gainsboro;
+                }
+
+
+                .well .list-group .media .media-body {
+                    margin-left: 10px;
+                }
+
+                    .well .list-group .media .media-body .message {
+                        font-size: 18px !important;
+                        margin:0;
+                    }
+
+        .well .buttons-wrap {
+            text-align: right;
+        }
+</style>
+
+<section class="well">
+    <h3 class="ra-well-title">两路口小疯队</h3>
+    @*消息列表*@
+    <div class="list-group">
+
+    </div>
+
+    @*输入消息*@
+    <div>
+        <div class="form-group">
+            <textarea class="form-control" id="textarea" rows="5"></textarea>
+        </div>
+    </div>
+
+    @*发送消息*@
+    <div class="buttons-wrap">
+        <button class="btn btn-default" id="send" type="button" disabled="disabled">发送</button>
+    </div>
+</section>
+@*消息推送*@
+<script>
+    window.onload = function(){//激活按钮
+        $("#send").attr("disabled",false);
+    }
+
+    //发送消息
+    $("#send").click(function () {
+        var msg = $("#textarea").val();
+        var fromUseId = '@ViewData["guid"]';
+        if (fromUseId && msg) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SendMsg", "Home")',
+                contentType: "application/json",
+                data: JSON.stringify({ userId: fromUseId, msg: msg }),
+                success: function (data) {
+                    $("#textarea").val("");
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        }
+    });
+
+    $(function () {
+        //声明hub代理
+        var propell = $.connection.propellHelper;
+
+        //创建后端<-->前端function
+        propell.client.sendMessage = function (info) {
+            if (info) {
+                var html = "<div class='media'>", name = "", msg = "";
+
+                if (info.UserName)
+                    name = info.UserName;
+                if (info.Msg)
+                    msg = info.Msg;
+
+                if ('@ViewData["guid"]' == info.UserId){
+                    html = "<div class='media' style='justify-content: flex-end;'>";
+                }
+                html += "<div class='message-container'>"+
+                             "<div class='media-left'>" +
+                             "    <a href='javascript:void(0)'>" +
+                             "        <img class='media-object' src=" + info.Avatar + " onerror='this.src="+'"/Content/images/user1.png"'+"'>" +
+                             "    </a>" +
+                             "</div>" +
+                             "<div class='media-body'>" +
+                             "    <h5 class='media-heading'>" + name + "</h5><p class='message'>" + msg +"</p>"+
+                             "</div>" +
+                         "</div>" +
+                       "</div>";
+
+                $(".list-group").append(html);
+            }
+        };
+
+        //开启链接
+        $.connection.hub.start().done(function () {
+            propell.server.register('@ViewData["guid"]','@ViewData["name"]',);
+        });
+    });
+</script>
